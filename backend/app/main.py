@@ -40,11 +40,33 @@ def seed_users() -> None:
         db.close()
 
 
+def seed_initial_admin() -> None:
+    if not settings.initial_admin_email or not settings.initial_admin_password:
+        return
+
+    db = SessionLocal()
+    try:
+        existing = db.query(User).filter(User.email == settings.initial_admin_email).first()
+        if not existing:
+            db.add(
+                User(
+                    email=settings.initial_admin_email,
+                    full_name=settings.initial_admin_name,
+                    role=UserRole.admin,
+                    hashed_password=hash_password(settings.initial_admin_password),
+                )
+            )
+            db.commit()
+    finally:
+        db.close()
+
+
 @app.on_event("startup")
 def startup() -> None:
     Base.metadata.create_all(bind=engine)
     if settings.seed_demo_users:
         seed_users()
+    seed_initial_admin()
 
 
 @app.get("/health", tags=["health"])

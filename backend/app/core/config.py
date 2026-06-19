@@ -18,6 +18,9 @@ class Settings(BaseSettings):
     cors_origins: str = Field(default="http://localhost:5173")
     upload_dir: str = "uploads"
     seed_demo_users: bool = False
+    initial_admin_email: str | None = None
+    initial_admin_password: str | None = None
+    initial_admin_name: str = "Initial Admin"
 
     @property
     def cors_origin_list(self) -> list[str]:

@@ -26,6 +26,12 @@ services:
         value: /app/uploads
       - key: SEED_DEMO_USERS
         value: false
+      - key: INITIAL_ADMIN_EMAIL
+        sync: false
+      - key: INITIAL_ADMIN_PASSWORD
+        sync: false
+      - key: INITIAL_ADMIN_NAME
+        value: Initial Admin
     disk:
       name: resume-parser-uploads
       mountPath: /app/uploads
