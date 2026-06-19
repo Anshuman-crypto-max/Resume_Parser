@@ -1,7 +1,7 @@
 services:
   - type: web
     name: resume-parser-api
-    env: docker
+    runtime: docker
     rootDir: backend
     plan: starter
     healthCheckPath: /health
@@ -33,16 +33,29 @@ services:
 
   - type: web
     name: resume-parser-web
-    env: docker
+    runtime: docker
     rootDir: frontend
     plan: starter
     healthCheckPath: /health
     envVars:
+      - key: PORT
+        value: 10000
       - key: API_URL
-        sync: false
+        value: /api
+      - key: BACKEND_HOST
+        fromService:
+          name: resume-parser-api
+          type: web
+          property: host
+      - key: BACKEND_PORT
+        fromService:
+          name: resume-parser-api
+          type: web
+          property: port
 
 databases:
   - name: resume-parser-db
-    plan: starter
+    plan: basic-256mb
+    diskSizeGB: 1
     databaseName: resume_parser
     user: resume_user
