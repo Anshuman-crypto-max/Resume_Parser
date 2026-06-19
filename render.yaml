@@ -22,6 +22,24 @@ services:
         generateValue: true
       - key: CORS_ORIGINS
         sync: false
+      - key: UPLOAD_DIR
+        value: /app/uploads
+      - key: SEED_DEMO_USERS
+        value: false
+    disk:
+      name: resume-parser-uploads
+      mountPath: /app/uploads
+      sizeGB: 1
+
+  - type: web
+    name: resume-parser-web
+    env: docker
+    rootDir: frontend
+    plan: starter
+    healthCheckPath: /health
+    envVars:
+      - key: API_URL
+        sync: false
 
 databases:
   - name: resume-parser-db

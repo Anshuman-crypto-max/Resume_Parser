@@ -27,11 +27,13 @@ services:
       OPENAI_MODEL: ${OPENAI_MODEL:-gpt-4o-mini}
       SECRET_KEY: ${SECRET_KEY:-replace-with-a-long-random-secret}
       CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:5173}
+      UPLOAD_DIR: ${UPLOAD_DIR:-/app/uploads}
+      SEED_DEMO_USERS: ${SEED_DEMO_USERS:-true}
       PORT: 8000
     ports:
       - "8000:8000"
     volumes:
-      - ./backend/uploads:/app/uploads
+      - uploads_data:/app/uploads
     depends_on:
       db:
         condition: service_healthy
@@ -46,12 +48,21 @@ services:
     build:
       context: ./frontend
       args:
-        VITE_API_URL: ${VITE_API_URL:-http://localhost:8000/api}
+        VITE_API_URL: ${VITE_API_URL:-/api}
+    environment:
+      API_URL: ${VITE_API_URL:-/api}
     ports:
       - "5173:80"
     depends_on:
       backend:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
 
 volumes:
   postgres_data:
+  uploads_data:

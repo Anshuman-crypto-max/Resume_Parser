@@ -9,11 +9,11 @@ from app.db import get_db
 from app.dependencies import get_current_user, require_admin
 from app.models import Candidate
 from app.schemas import CandidateDetail, CandidateList, CandidateRead
+from app.core.config import get_settings
 from app.services.file_extractors import extract_resume_text, validate_resume_file
 from app.services.resume_parser import parse_resume
 
 router = APIRouter(prefix="/candidates", tags=["candidates"])
-UPLOAD_DIR = Path("uploads")
 
 
 @router.get("", response_model=CandidateList)
@@ -50,9 +50,10 @@ async def upload_candidate(
     _: object = Depends(get_current_user),
 ) -> Candidate:
     suffix = validate_resume_file(file)
-    UPLOAD_DIR.mkdir(exist_ok=True)
+    upload_dir = Path(get_settings().upload_dir)
+    upload_dir.mkdir(parents=True, exist_ok=True)
     safe_name = f"{uuid4().hex}{suffix}"
-    path = UPLOAD_DIR / safe_name
+    path = upload_dir / safe_name
     path.write_bytes(await file.read())
 
     text = extract_resume_text(path)
@@ -106,4 +107,3 @@ def delete_candidate(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Candidate not found")
     db.delete(candidate)
     db.commit()
-

@@ -16,6 +16,8 @@ class Settings(BaseSettings):
     secret_key: str = "change-me-in-production"
     access_token_expire_minutes: int = 720
     cors_origins: str = Field(default="http://localhost:5173")
+    upload_dir: str = "uploads"
+    seed_demo_users: bool = False
 
     @property
     def cors_origin_list(self) -> list[str]:

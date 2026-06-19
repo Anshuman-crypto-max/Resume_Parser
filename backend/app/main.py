@@ -43,7 +43,8 @@ def seed_users() -> None:
 @app.on_event("startup")
 def startup() -> None:
     Base.metadata.create_all(bind=engine)
-    seed_users()
+    if settings.seed_demo_users:
+        seed_users()
 
 
 @app.get("/health", tags=["health"])

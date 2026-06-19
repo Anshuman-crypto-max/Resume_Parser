@@ -1,0 +1,61 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: resume_user
+          POSTGRES_PASSWORD: resume_pass
+          POSTGRES_DB: resume_parser
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U resume_user -d resume_parser"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install dependencies
+        working-directory: backend
+        run: pip install -r requirements.txt
+      - name: Compile backend
+        working-directory: backend
+        env:
+          DATABASE_URL: postgresql+psycopg://resume_user:resume_pass@localhost:5432/resume_parser
+          SECRET_KEY: ci-secret
+        run: python -m compileall app
+
+  frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Install dependencies
+        working-directory: frontend
+        run: npm ci
+      - name: Build frontend
+        working-directory: frontend
+        run: npm run build
+
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build Docker images
+        run: docker compose build
